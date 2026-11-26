@@ -141,3 +141,14 @@ def test_cli_train_then_check(tmp_path, capsys):
 
 def test_cli_check_without_model(tmp_path, capsys):
     assert cli.main(["check", "--model", str(tmp_path / "none"), "x.com"]) == 2
+
+
+# --------------------------------------------------------- dataset builder ----
+def test_dataset_builder_is_balanced_and_host_only():
+    import build_dataset as bd
+    phish = ["http://evil.xyz/login/a.php", "http://evil.xyz/other", "https://bad.top/x?y=1", "junk"]
+    tranco = [(str(i), f"site{i}.com") for i in range(50)]
+    rows = bd.build(phish, tranco)
+    labels = [l for _, l in rows]
+    assert labels.count(1) == labels.count(0) == 2          # duplicate host merged, junk dropped
+    assert all(urlsplit_path == "" for urlsplit_path in (__import__("urllib.parse").parse.urlsplit(u).path for u, _ in rows))

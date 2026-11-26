@@ -4,3 +4,4 @@ __pycache__/
 models/
 .venv/
 .DS_Store
+real_urls.csv
