@@ -40,7 +40,7 @@ Put them in a CSV with a URL column and a label column (`bad`/`good`, `phishing`
 python cli.py train --csv my_urls.csv                       # columns are guessed
 python cli.py train --csv my_urls.csv --url-col URL --label-col Label
 ```
-
+Result on a real held-out test set (116 URLs, OpenPhish + Tranco, domain-level): precision 100%, recall 94.8% (Random Forest) vs 91.4% recall for the logistic-regression baseline. Small test set, and legitimate URLs come as bare domains, so treat this as a baseline, not a production figure.
 The script prints precision, recall and F1 on URLs the model never saw during training, plus how many phishing links were missed and how many good links were wrongly flagged.
 
 ## Reading the results
