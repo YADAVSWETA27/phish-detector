@@ -2,6 +2,8 @@
 
 A small machine-learning project in Python that decides whether a link looks like **phishing**, and **explains why** in plain English. It only reads the text of the URL, so checking a dangerous link is safe: the site is never visited.
 
+Example output (model trained on the built-in synthetic data):
+
 ```
 $ python cli.py check "http://paypal.secure-login.xyz/verify"
 PHISHING    96%  http://paypal.secure-login.xyz/verify
@@ -24,7 +26,7 @@ pip install -r requirements.txt
 python cli.py train                 # trains on built-in synthetic data (see warning below)
 python cli.py check "https://www.wikipedia.org" "http://192.0.2.4/bank/login.php"
 streamlit run app.py                # paste a link in the browser
-python -m pytest                    # 21 tests
+python -m pytest                    # 22 tests
 ```
 
 ## Train on real data (recommended)
@@ -41,6 +43,17 @@ python cli.py train --csv my_urls.csv                       # columns are guesse
 python cli.py train --csv my_urls.csv --url-col URL --label-col Label
 ```
 
+Or let the project download real data for you: `python build_dataset.py` fetches OpenPhish (phishing) and Tranco (legitimate) and writes `real_urls.csv`; then run `python cli.py train --csv real_urls.csv`. Both sides are reduced to scheme + domain so the model cannot learn "has a path = phishing".
+
+**Result on a real held-out test set** (116 URLs, OpenPhish + Tranco, domain level):
+
+| Model | Precision | Recall |
+|---|---|---|
+| Random Forest | 100% | 94.8% |
+| Logistic Regression (baseline) | 100% | 91.4% |
+
+This is a small test set, so treat it as a baseline, not a production figure.
+
 The script prints precision, recall and F1 on URLs the model never saw during training, plus how many phishing links were missed and how many good links were wrongly flagged.
 
 ## Reading the results
@@ -55,6 +68,7 @@ The script prints precision, recall and F1 on URLs the model never saw during tr
 - **URL text only.** It does not look at page content, certificates, domain age or reputation, which strong real-world systems combine with URL features.
 - **Look-alike domains** (`paypa1.com`) are only partly covered.
 - **Brand and keyword lists are English-centric** and short; attackers adapt.
+- **Small real-data test and dataset bias.** The real-data result uses 116 test URLs, and the legitimate list contains plain domains while many phishing links sit on subdomains, so the model partly learns that pattern. Expect lower numbers on messier real traffic.
 - **A starting point, not a security product.** Treat the verdict as one signal.
 
 ## Project layout
@@ -67,8 +81,9 @@ The script prints precision, recall and F1 on URLs the model never saw during tr
 | `phishing/model.py` | Training, evaluation, saving, scoring |
 | `cli.py` | `train` and `check` commands |
 | `app.py` | Streamlit web page |
-| `tests/` | 21 automated tests |
+| `build_dataset.py` | Downloads real data (OpenPhish + Tranco) into `real_urls.csv` |
+| `tests/` | 22 automated tests |
 
 ## License
 
-MIT (add a LICENSE file via GitHub: Add file > Create new file > name it `LICENSE`, then choose a template).
+MIT. See the `LICENSE` file.
